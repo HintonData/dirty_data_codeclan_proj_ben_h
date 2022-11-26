@@ -1,0 +1,54 @@
+---
+title: "Task 1"
+output: html_notebook
+---
+
+Here we load in tidyverse and the here package - allowing our code to be reproducible. Others using this project should have no issue loading in the cleaned data.
+```{r}
+library(tidyverse)
+library(here)
+decathlon <- read_csv(here("clean_data/decathlon_cleaned.csv"))
+```
+
+Analysis Questions:
+
+1. Who had the longest long jump seen in the data?
+```{r}
+decathlon %>% 
+  select(long_jump, names) %>% 
+  filter(long_jump == max(long_jump))
+
+# CLAY has the longest long jump.
+```
+
+
+
+2. What was the average 100m time in each competition?
+```{r}
+decathlon %>% 
+  group_by(competition) %>% 
+  summarise(average_100m_time = round(mean(x100m), 2))
+
+# The average 100m time is 11.18 seconds for Decastar, and 10.92 for OlympicG.
+```
+
+
+3. Who had the highest total points across both competitions?
+```{r}
+s
+```
+
+
+
+4. What was the shot-put scores for the top three competitors in each competition?
+```{r}
+
+```
+
+
+
+5. What was the average points for competitors who ran the 400m in less than 50 seconds vs. those than ran 400m in more than 50 seconds?
+```{r}
+
+```
+
