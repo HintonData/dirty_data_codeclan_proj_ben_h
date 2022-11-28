@@ -1,28 +1,81 @@
 ---
-title: "Task 1 Documentation"
+title: "Task 1: Decathlon Dataset"
 author: "Ben Hinton"
 date: "`r Sys.Date()`"
 output: html_document
+editor_options: 
+  markdown: 
+    wrap: 72
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Introduction:
+### Introduction:
 
+This is a dataset on athletes performance over two decathlon
+competitions. (decathlon - a combined event in athletics consisting of
+ten track and field events). It records the scores of each athlete for
+each track and field event in both competitions, there total points,
+rank and which competitions they competed in.
 
+### **List of Assumptions Made:**
 
-List of Assumptions Made:
+1.  I have assumed that the points system is consistent across both
+    competitions.
 
+2.  I have assumed that there is no duplicate names; each name is the
+    same person. For example, that the SERBLE participating in the
+    OlympicG competition is the same as the SERBLE competing in the
+    Decastar competition.
 
+### **Cleaning the Data:**
 
-Cleaning the Data:
+To clean the data, we start with loading in the tidyverse and janitor
+packages, as well as the rds file. I run the clean_names() function to
+clean up the column names. The row names are converted into a column of
+their own and into upper case to be consistent. The javeline column is
+misspelt, so I use rename() to fix it.
 
+I had issues with doing all of this at once so I split it into parts,
+the decathlon variable is cleaned step by step, one after the other.
 
+Finally, I write the cleaned data into a new csv file.
 
-Answers to Analysis Questions:
+### **Answers to Analysis Questions:**
 
+1.  Who had the longest long jump seen in the data?
 
+    CLAY has the longest long jump.
 
-Additional Analysis:
+2.  What was the average 100m time in each competition?
+
+    The average 100m time is 11.18 seconds for Decastar, and 10.92 for
+    OlympicG.
+
+3.  Who had the highest total points across both competitions?
+
+    SERBLE had the highest points across both competitions
+
+4.  What was the shot-put scores for the top three competitors in each
+    competition?
+
+    For OlympicG; **16.36, 15.23, 15.93**
+
+For Decastar; **14.83 14.26 14.77**
+
+5.  What was the average points for competitors who ran the 400m in less
+    than 50 seconds vs. those than ran 400m in more than 50 seconds?
+
+    Average Points for less than 50 seconds = **8120.483**
+
+    Average Points for more than 50 seconds = **7727.167**
+
+### **Additional Analysis:**
+
+SERBLE, CLAY and KARPOV are 1st, 2nd and 3rd respectively for both
+competitions.
+
+It seems that doing well in the 400m predicts better success in the
+whole competition.

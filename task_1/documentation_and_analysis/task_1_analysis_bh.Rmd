@@ -34,21 +34,62 @@ decathlon %>%
 
 
 3. Who had the highest total points across both competitions?
+
+Notes: First I need to find out who has played in both competitions.
+
+Then a way to sum the points for each competition.
+
+Then compare people with each other and find the athlete with the highest number of points.
 ```{r}
-s
+decathlon %>% 
+  group_by(names) %>% 
+  summarise(total_points = sum(points)) %>% 
+  arrange(desc(total_points))
+
+# SERBLE had the highest points across both competitions
+  
 ```
 
 
-
 4. What was the shot-put scores for the top three competitors in each competition?
-```{r}
 
+Note: First we want to group by competition, arrange by points and find the names of the top 3 competitors in each competition. So, 6 athletes in total. Then simply select the shot_put column, and we have our answer.
+
+```{r}
+decathlon %>% 
+  filter(competition == "OlympicG") %>% 
+  arrange(desc(points)) %>% 
+  select(names, shot_put, points, competition) %>% 
+  head(3)
+
+decathlon %>% 
+  filter(competition == "Decastar") %>% 
+  arrange(desc(points)) %>% 
+  select(names, shot_put, points, competition) %>% 
+  head(3)
+
+
+# Extra analysis: SERBLE, CLAY and KARPOV are 1st, 2nd and 3rd respectively for both competitions.
 ```
 
 
 
 5. What was the average points for competitors who ran the 400m in less than 50 seconds vs. those than ran 400m in more than 50 seconds?
-```{r}
 
+Note: Average means finding the mean in this context, probably in a summarise. We want to make 2 categories here; those who completed the 400m in <=50 seconds and the rest. Then, find the mean points for these 2 categories. 
+```{r}
+avg_points_400m_under_50 <- decathlon %>% 
+  filter(x400m <= 50) %>% 
+  summarise(avg_points_400m_under_50 = mean(points)) %>% 
+  pull()
+
+avg_points_400m_over_50 <- decathlon %>% 
+  filter(x400m > 50) %>% 
+  summarise(avg_points_400m_over_50 = mean(points)) %>% 
+  pull()
+
+avg_points_400m_under_50
+avg_points_400m_over_50
 ```
 
+I could've also found this out by susing a function with an if x400m <= 50 and an else. However, this way is quicker and simpler and gets me the answer!
