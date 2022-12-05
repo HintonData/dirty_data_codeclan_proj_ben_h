@@ -86,10 +86,19 @@ candy2017 <- candy2017 %>%
 candy2015 <- candy2015 %>% 
   rename(bonkers_the_candy = bonkers) %>% 
   rename(hersheys_milk_chocolate = hershey_s_milk_chocolate) %>% 
-  rename(hersheys_kissables = hershey_s_kissables)
+  rename(hersheys_kissables = hershey_s_kissables) %>% 
+  rename(boxo_raisins = box_o_raisins) %>% 
+  rename(hersheys_dark_chocolate = dark_chocolate_hershey) %>% 
+  rename(licorice_yes_black = licorice) %>% 
+  rename(sweetums_a_friend_to_diabetes = sweetums)
+  
 
 candy2016 <- candy2016 %>% 
   rename(hersheys_milk_chocolate = hershey_s_milk_chocolate)
+
+
+
+
   
   
 # Now we have consistent names across the tables, we should be able to join them.
@@ -103,8 +112,21 @@ candy_full <- full_join(candy_full, candy2017)
 # Now we need to clean the age column.
 
 candy_full <- candy_full %>% 
-  mutate(age = as.integer(age)) %>% 
-  mutate(age = na_if(age, age > 120 | age < 0))
+  mutate(age = as.integer(age))
+
+# candy_full <- candy_full %>% 
+#   mutate(age = na_if(age, age > 120)) %>% 
+#   mutate(age = na_if(age, age < 1))
+
+
+
+candy_full <- candy_full %>%
+  select(-(please_leave_any_remarks_or_comments_regarding_your_choices:fill_in_the_blank_imitation_is_a_form_of)) %>% 
+  select(-(please_estimate_the_degrees_of_separation_you_have_from_the_following_folks_bruce_lee:internal_id)) %>% 
+  select(-(take_5:click_coordinates_x_y)) %>% 
+  select(-(please_list_any_items_not_included_above_that_give_you_joy:york_peppermint_patties_ignore))
+
+
 
 
 
@@ -596,9 +618,11 @@ candy_full <- candy_full %>%
 
 
 
-candy_full %>%
-  distinct(province) %>%
-  arrange(province) %>%
-  view()
+# candy_full %>%
+#   distinct(age) %>%
+#   arrange(age) %>%
+#   view()
+# # 
+# view(candy_full)
 
-view(candy_full)
+#write_csv(x = candy_full, file = "clean_data/boing_boing_cleaned.csv")

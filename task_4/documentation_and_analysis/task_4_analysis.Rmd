@@ -3,3 +3,176 @@ title: "Task 4 Analysis"
 output: html_notebook
 ---
 
+```{r}
+library(tidyverse)
+library(here)
+candy_cleaned <- read_csv(here("clean_data/boing_boing_cleaned.csv"))
+```
+
+
+1. What is the total number of candy ratings given across the three years. (Number of candy ratings, not the number of raters. Don’t count missing values)
+
+```{r}
+# First we select all the columns with ratings; this is what we want to count.
+candy_cleaned_ratings_only <- candy_cleaned %>% 
+  select(x100_grand_bar:sandwich_sized_bags_filled_with_boo_berry_crunch)
+
+# Then we sum all the Not NA values, giving us the total number of candy ratings!
+sum(!is.na(candy_cleaned_ratings_only))
+
+```
+
+2. What was the average age of people who are going out trick or treating?
+
+```{r}
+# We filter so we only get those who went out trick or treating, then took the mean of the age column; removing NAs so we could perform this calculation!
+
+candy_cleaned %>% 
+  filter(trick_or_treating == "Yes") %>% 
+  filter(age < 120) %>% 
+  summarise(avg_age_of_trick_or_treaters = mean(age, na.rm = TRUE))
+```
+
+
+
+
+
+3. What was the average age of people who are not going trick or treating?
+
+```{r}
+candy_cleaned %>% 
+  filter(trick_or_treating == "No") %>% 
+  filter(age < 120) %>% 
+  summarise(avg_age_of_not_trick_or_treaters = mean(age, na.rm = TRUE))
+```
+
+
+
+4. For each of joy, despair and meh, which candy bar received the most of these ratings?
+
+# The issue here is we're working in both columns and rows, it's tricky. I have counted the amount of JOY per column but I can't map that to the corresponding candy column. I suspect some sort of function could be  written to increment a count of each JOY for each column, though frankly I've no idea how to do that.
+
+Alternatively, we could create some sort of index for the candy columns which would map to our total_joy_per_candy vector, then search for the highest no. of ratings in that vector - we could then easily  match them. 
+
+```{r}
+
+# JOY
+
+total_joy_per_candy <- c(str_count(candy_cleaned_ratings_only, "JOY"))
+
+index_joy <- which(total_joy_per_candy == max(total_joy_per_candy))
+
+candy_with_most_joy <- candy_cleaned_ratings_only[index_joy]
+
+
+# MEH
+
+total_meh_per_candy <- c(str_count(candy_cleaned_ratings_only, "MEH"))
+
+index_meh <- which(total_meh_per_candy == max(total_meh_per_candy))
+
+candy_with_most_meh <- candy_cleaned_ratings_only[index_meh]
+
+
+# DESPAIR
+
+total_despair_per_candy <- c(str_count(candy_cleaned_ratings_only, "DESPAIR"))
+
+index_despair <- which(total_despair_per_candy == max(total_despair_per_candy))
+
+candy_with_most_despair <- candy_cleaned_ratings_only[index_despair]
+
+
+colnames(candy_with_most_joy)
+colnames(candy_with_most_meh)
+colnames(candy_with_most_despair)
+
+
+
+```
+
+
+
+5. How many people rated Starburst as despair?
+
+```{r}
+candy_cleaned %>% 
+  filter(starburst == "DESPAIR") %>% 
+  nrow()
+```
+
+For the next three questions, count despair as -1, joy as +1, and meh as 0.
+
+How do we convert JOY to 1, despair to -1 etc? Probably want to use str_detect and a function, that replaces string with a number when the string match is TRUE.
+
+Prequel to next 3 questions:
+
+```{r}
+
+
+# candy_cleaned %>% 
+#     mutate(across(matches('[A-Za-z]'), ~ case_when(. == "DESPAIR" ~ -1, 
+#                      . == 'MEH' ~ 0,
+#                      . == "JOY" ~ 1,
+#                      TRUE ~ NA_real_)))
+# 
+# 
+# 
+# candy_cleaned %>% 
+#   mutate(across(.cols = everything(), .fns = NULL, str_replace_all(candy_cleaned, "DESPAIR", "-1")))
+# 
+# 
+# while (candy_cleaned$x100_grand_bar) == "DESPAIR"){
+#   candy_cleaned$x100_grand_bar <- "-1"
+# }
+
+
+candy_cleaned <- candy_cleaned %>% 
+  mutate(x100_grand_bar = gsub("DESPAIR", "-1", candy_cleaned$x100_grand_bar))
+
+candy_cleaned <- candy_cleaned %>% 
+  mutate(x100_grand_bar = gsub("MEH", "0", candy_cleaned$x100_grand_bar))
+
+candy_cleaned <- candy_cleaned %>% 
+  mutate(x100_grand_bar = gsub("JOY", "1", candy_cleaned$x100_grand_bar))
+
+candy_cleaned <- candy_cleaned %>% 
+  mutate(x100_grand_bar = as.numeric(x100_grand_bar))
+
+
+
+
+
+candy_cleaned <- candy_cleaned %>%
+  mutate(across(x100_grand_bar:sandwich_sized_bags_filled_with_boo_berry_crunch, gsub("JOY", "1", candy_cleaned)))
+
+
+
+
+
+
+```
+
+
+
+
+6. What was the most popular candy bar by this rating system for each gender in the dataset?
+
+```{r}
+
+```
+
+
+7. What was the most popular candy bar in each year?
+
+```{r}
+
+```
+
+
+What was the most popular candy bar by this rating for people in US, Canada, UK, and all other countries?
+
+```{r}
+
+```
+
