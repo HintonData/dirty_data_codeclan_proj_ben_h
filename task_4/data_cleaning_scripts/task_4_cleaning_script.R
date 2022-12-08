@@ -623,6 +623,15 @@ candy_full <- candy_full %>%
 #   arrange(age) %>%
 #   view()
 # # 
-# view(candy_full)
+
+
+candy_full <- candy_full %>% 
+  pivot_longer(cols = x100_grand_bar:sandwich_sized_bags_filled_with_boo_berry_crunch,
+               names_to = "candy",
+               values_to = "ratings")
+
+
+
+
 
 #write_csv(x = candy_full, file = "clean_data/boing_boing_cleaned.csv")

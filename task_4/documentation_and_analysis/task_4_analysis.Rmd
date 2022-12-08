@@ -15,7 +15,7 @@ candy_cleaned <- read_csv(here("clean_data/boing_boing_cleaned.csv"))
 ```{r}
 # First we select all the columns with ratings; this is what we want to count.
 candy_cleaned_ratings_only <- candy_cleaned %>% 
-  select(x100_grand_bar:sandwich_sized_bags_filled_with_boo_berry_crunch)
+  select(ratings)
 
 # Then we sum all the Not NA values, giving us the total number of candy ratings!
 sum(!is.na(candy_cleaned_ratings_only))
@@ -50,129 +50,188 @@ candy_cleaned %>%
 
 4. For each of joy, despair and meh, which candy bar received the most of these ratings?
 
-# The issue here is we're working in both columns and rows, it's tricky. I have counted the amount of JOY per column but I can't map that to the corresponding candy column. I suspect some sort of function could be  written to increment a count of each JOY for each column, though frankly I've no idea how to do that.
 
-Alternatively, we could create some sort of index for the candy columns which would map to our total_joy_per_candy vector, then search for the highest no. of ratings in that vector - we could then easily  match them. 
 
 ```{r}
+# First we work out "JOY"
+candy_cleaned %>%
+  filter(ratings == "JOY") %>% 
+  group_by(candy) %>% 
+  summarise(count = n()) %>% 
+  arrange(desc(count)) %>% 
+  head(1) %>% 
+  select(candy) %>% 
+  pull()
 
-# JOY
-
-total_joy_per_candy <- c(str_count(candy_cleaned_ratings_only, "JOY"))
-
-index_joy <- which(total_joy_per_candy == max(total_joy_per_candy))
-
-candy_with_most_joy <- candy_cleaned_ratings_only[index_joy]
-
-
-# MEH
-
-total_meh_per_candy <- c(str_count(candy_cleaned_ratings_only, "MEH"))
-
-index_meh <- which(total_meh_per_candy == max(total_meh_per_candy))
-
-candy_with_most_meh <- candy_cleaned_ratings_only[index_meh]
-
-
-# DESPAIR
-
-total_despair_per_candy <- c(str_count(candy_cleaned_ratings_only, "DESPAIR"))
-
-index_despair <- which(total_despair_per_candy == max(total_despair_per_candy))
-
-candy_with_most_despair <- candy_cleaned_ratings_only[index_despair]
+# Now "MEH"
+candy_cleaned %>%
+  filter(ratings == "MEH") %>% 
+  group_by(candy) %>% 
+  summarise(count = n()) %>% 
+  arrange(desc(count)) %>% 
+  head(1) %>% 
+  select(candy) %>% 
+  pull()
 
 
-colnames(candy_with_most_joy)
-colnames(candy_with_most_meh)
-colnames(candy_with_most_despair)
-
-
-
+# Now "DESPAIR"
+candy_cleaned %>%
+  filter(ratings == "DESPAIR") %>% 
+  group_by(candy) %>% 
+  summarise(count = n()) %>% 
+  arrange(desc(count)) %>% 
+  head(1) %>% 
+  select(candy) %>% 
+  pull()
+  
 ```
-
 
 
 5. How many people rated Starburst as despair?
 
 ```{r}
 candy_cleaned %>% 
-  filter(starburst == "DESPAIR") %>% 
+  filter(candy == "starburst" & ratings == "DESPAIR") %>% 
   nrow()
 ```
 
 For the next three questions, count despair as -1, joy as +1, and meh as 0.
 
-How do we convert JOY to 1, despair to -1 etc? Probably want to use str_detect and a function, that replaces string with a number when the string match is TRUE.
-
-Prequel to next 3 questions:
-
 ```{r}
-
-
-# candy_cleaned %>% 
-#     mutate(across(matches('[A-Za-z]'), ~ case_when(. == "DESPAIR" ~ -1, 
-#                      . == 'MEH' ~ 0,
-#                      . == "JOY" ~ 1,
-#                      TRUE ~ NA_real_)))
-# 
-# 
-# 
-# candy_cleaned %>% 
-#   mutate(across(.cols = everything(), .fns = NULL, str_replace_all(candy_cleaned, "DESPAIR", "-1")))
-# 
-# 
-# while (candy_cleaned$x100_grand_bar) == "DESPAIR"){
-#   candy_cleaned$x100_grand_bar <- "-1"
-# }
-
-
 candy_cleaned <- candy_cleaned %>% 
-  mutate(x100_grand_bar = gsub("DESPAIR", "-1", candy_cleaned$x100_grand_bar))
-
-candy_cleaned <- candy_cleaned %>% 
-  mutate(x100_grand_bar = gsub("MEH", "0", candy_cleaned$x100_grand_bar))
-
-candy_cleaned <- candy_cleaned %>% 
-  mutate(x100_grand_bar = gsub("JOY", "1", candy_cleaned$x100_grand_bar))
-
-candy_cleaned <- candy_cleaned %>% 
-  mutate(x100_grand_bar = as.numeric(x100_grand_bar))
-
-
-
-
-
-candy_cleaned <- candy_cleaned %>%
-  mutate(across(x100_grand_bar:sandwich_sized_bags_filled_with_boo_berry_crunch, gsub("JOY", "1", candy_cleaned)))
-
-
-
-
-
-
+  mutate(ratings_numeric = case_when(
+    ratings == "DESPAIR" ~ as.numeric(-1),
+    ratings == "MEH" ~ as.numeric(0),
+    ratings == "JOY" ~ as.numeric(1),
+    TRUE ~ NA_real_))
 ```
-
 
 
 
 6. What was the most popular candy bar by this rating system for each gender in the dataset?
 
 ```{r}
+scores <- candy_cleaned %>% 
+  group_by(gender, candy) %>% 
+  summarise(score_of_candy = sum(ratings_numeric, na.rm = TRUE))
 
+scores_female <- scores %>% 
+  filter(gender == "Female") %>% 
+  mutate(high_score = max(score_of_candy)) %>% 
+  filter(score_of_candy == high_score)
+
+scores_male <- scores %>% 
+  filter(gender == "Male") %>% 
+  mutate(high_score = max(score_of_candy)) %>% 
+  filter(score_of_candy == high_score) %>% 
+  select(candy) %>% 
+  pull()
+
+scores_other <- scores %>% 
+  filter(gender == "Other") %>% 
+  mutate(high_score = max(score_of_candy)) %>% 
+  filter(score_of_candy == high_score) %>% 
+  select(candy) %>% 
+  pull()
+
+scores_rather_not_say <- scores %>% 
+  filter(gender == "I'd rather not say") %>% 
+  mutate(high_score = max(score_of_candy)) %>% 
+  filter(score_of_candy == high_score) %>% 
+  select(candy) %>% 
+  pull()
+
+scores_male
+scores_female
+scores_other
+scores_rather_not_say
 ```
 
 
 7. What was the most popular candy bar in each year?
 
 ```{r}
+# There was no timestamp variable for 2017, so we filter where NAs are TRUE for timestamp.
+
+score_for_2017 <- candy_cleaned %>%
+  filter(is.na(timestamp) == TRUE) %>% 
+  group_by(candy) %>% 
+  summarise(ratings_sum = sum(ratings_numeric, na.rm = TRUE)) %>%
+  mutate(max_rating = max(ratings_sum)) %>%
+  filter(ratings_sum == max_rating) %>% 
+  select(candy) %>% 
+  pull()
+
+
+
+# For this next part, we need to convert the format of timestamp so we can get the range we want. Then we filter for timestamp == 2016 then timestamp == 2015.
+
+
+score_for_2016 <- candy_cleaned %>%
+  filter(timestamp >= '2016-01-01 00:00:00' & timestamp <= '2016-12-31 23:59:59') %>% 
+  group_by(candy) %>% 
+  summarise(ratings_sum = sum(ratings_numeric, na.rm = TRUE)) %>%
+  mutate(max_rating = max(ratings_sum)) %>%
+  filter(ratings_sum == max_rating) %>% 
+  select(candy) %>% 
+  pull()
+
+
+score_for_2015 <- candy_cleaned %>%
+  filter(timestamp >= '2015-01-01 00:00:00' & timestamp <= '2015-12-31 23:59:59') %>% 
+  group_by(candy) %>% 
+  summarise(ratings_sum = sum(ratings_numeric, na.rm = TRUE)) %>%
+  mutate(max_rating = max(ratings_sum)) %>%
+  filter(ratings_sum == max_rating) %>% 
+  select(candy) %>% 
+  pull()
+
 
 ```
 
 
-What was the most popular candy bar by this rating for people in US, Canada, UK, and all other countries?
+8. What was the most popular candy bar by this rating for people in US, Canada, UK, and all other countries?
 
 ```{r}
+most_popular_usa <- candy_cleaned %>% 
+  filter(country == 'USA') %>% 
+  group_by(candy) %>% 
+  summarise(ratings_sum = sum(ratings_numeric, na.rm = TRUE)) %>%
+  mutate(max_rating = max(ratings_sum)) %>%
+  filter(ratings_sum == max_rating) %>% 
+  select(candy) %>% 
+  pull()
 
+most_popular_canada <- candy_cleaned %>% 
+  filter(country == 'CANADA') %>% 
+  group_by(candy) %>% 
+  summarise(ratings_sum = sum(ratings_numeric, na.rm = TRUE)) %>%
+  mutate(max_rating = max(ratings_sum)) %>%
+  filter(ratings_sum == max_rating) %>% 
+  select(candy) %>% 
+  pull()
+
+most_popular_uk <- candy_cleaned %>% 
+  filter(country == 'UK') %>% 
+  group_by(candy) %>% 
+  summarise(ratings_sum = sum(ratings_numeric, na.rm = TRUE)) %>%
+  mutate(max_rating = max(ratings_sum)) %>%
+  filter(ratings_sum == max_rating) %>% 
+  select(candy) %>% 
+  pull()
+
+most_popular_rest_of_world <- candy_cleaned %>% 
+  filter(country != 'USA' & country != 'CANADA' & country != 'UK') %>% 
+  group_by(candy) %>% 
+  summarise(ratings_sum = sum(ratings_numeric, na.rm = TRUE)) %>%
+  mutate(max_rating = max(ratings_sum)) %>%
+  filter(ratings_sum == max_rating) %>% 
+  select(candy) %>% 
+  pull()
+
+most_popular_usa
+most_popular_canada
+most_popular_uk
+most_popular_rest_of_world
 ```
 
